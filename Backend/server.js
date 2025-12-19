@@ -9,7 +9,6 @@ const app = express();
    CORS CONFIG (IMPORTANT)
    ========================= */
 const allowedOrigins = [
-  'http://localhost:3000',
   'https://chronicley-app.vercel.app'
 ];
 
