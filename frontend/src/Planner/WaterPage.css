@@ -1,0 +1,66 @@
+/* src/Planner/WaterPage.css */
+
+.water-page {
+  max-width: 700px;
+  margin: auto;
+  padding: 2rem;
+  background: #e3f2fd;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(33, 150, 243, 0.2);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h2 {
+  text-align: center;
+  color: #0288d1;
+  margin-bottom: 1.5rem;
+}
+
+.water-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.water-form label {
+  font-weight: 600;
+  color: #01579b;
+}
+
+.water-form input {
+  padding: 0.6rem;
+  border: 1px solid #81d4fa;
+  border-radius: 8px;
+  outline: none;
+}
+
+.water-form button {
+  padding: 0.6rem;
+  background: #4fc3f7;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.water-form button:hover {
+  background: #039be5;
+}
+
+.error {
+  color: red;
+  text-align: center;
+  margin-top: 0.5rem;
+}
+
+.no-data {
+  text-align: center;
+  color: #555;
+}
+
+.water-chart {
+  margin-top: 2rem;
+}

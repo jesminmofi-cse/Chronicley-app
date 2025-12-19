@@ -1,0 +1,14 @@
+.layout-container{
+    display: flex;
+    min-height: 100vh;
+}
+.sidebar{
+    width: 220px;
+    padding: 1rem;
+    background: linear-gradient(to bottom, #dbe9f4,#fce6e6);
+}
+.main-content{
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}

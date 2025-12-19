@@ -1,0 +1,82 @@
+/* ===== Home Page Container ===== */
+.home-container {
+  display: flex;
+  flex-direction: row;
+  min-height: 100vh;
+  background: #f0f4f8;
+  font-family: 'Arial', sans-serif;
+}
+
+/* ===== Main Content Area ===== */
+.main-content {
+  flex: 1;
+  padding: 30px;
+  background-color: #ffffff;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+/* ===== Dashboard Titles ===== */
+.dashboard-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #c93b6d;
+  margin-bottom: 10px;
+}
+
+.dashboard-subtitle {
+  font-size: 16px;
+  color: #555555;
+  margin-bottom: 30px;
+}
+
+/* ===== Graph Section ===== */
+.graph-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+/* ===== Individual Graph Cards ===== */
+.graph-section > div {
+  background: #f5faff;
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* Browser compatibility */
+  -webkit-backdrop-filter: blur(5px);
+  backdrop-filter: blur(5px);
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+
+/* Hover & focus effect for graph cards */
+.graph-section > div:hover,
+.graph-section > div:focus-within {
+  transform: scale(1.02);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  outline: none;
+}
+
+/* Focus ring for accessibility */
+.graph-section > div:focus-within {
+  outline: 3px solid rgba(201, 59, 109, 0.5);
+}
+
+/* ===== Responsive Adjustments ===== */
+@media (max-width: 768px) {
+  .main-content {
+    padding: 20px;
+  }
+  
+  .dashboard-title {
+    font-size: 24px;
+  }
+  
+  .dashboard-subtitle {
+    font-size: 14px;
+  }
+}

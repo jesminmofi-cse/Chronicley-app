@@ -1,0 +1,119 @@
+/* src/Planner/TaskPage.css */
+.task-page {
+  padding: 30px;
+  background-image: url('https://wallpapercave.com/wp/wp5804107.jpg');
+  min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+h2 {
+  color: #8e44ad;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.task-form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.task-form input {
+  padding: 10px;
+  border: 1px solid #d9a7f0;
+  border-radius: 8px;
+  width: 220px;
+  font-size: 16px;
+  background-color: #ffffff;
+}
+
+.task-form button {
+  background-color: #b388eb;
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.task-form button:hover {
+  background-color: #9b59b6;
+}
+
+.error {
+  color: red;
+  text-align: center;
+  margin-top: -10px;
+  margin-bottom: 10px;
+}
+
+.task-list {
+  list-style: none;
+  padding: 0;
+  max-width: 700px;
+  margin: auto;
+}
+
+.task-item {
+  background: #f9f0ff;
+  border: 1px solid #decafc;
+  border-radius: 10px;
+  margin: 10px 0;
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.2s;
+}
+
+.task-item.completed {
+  background: #e8e0f8;
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+.task-content {
+  flex-grow: 1;
+  margin-left: 10px;
+}
+
+.task-content .title {
+  font-size: 18px;
+  color: #6a1b9a;
+  margin: 0;
+}
+
+.task-content .due {
+  font-size: 14px;
+  color: #8e44ad;
+  margin-top: 4px;
+}
+
+.icon {
+  font-size: 20px;
+  cursor: pointer;
+  color: #a569bd;
+}
+
+.icon.complete {
+  color: #7d3c98;
+}
+
+.icon.trash {
+  color: #d98880;
+}
+
+.icon.trash:hover {
+  color: #c0392b;
+}
+
+.empty {
+  text-align: center;
+  font-style: italic;
+  color: #7f8c8d;
+  margin-top: 20px;
+}

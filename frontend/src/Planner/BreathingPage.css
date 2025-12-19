@@ -1,0 +1,71 @@
+.breathing-container {
+  text-align: center;
+  padding: 2rem;
+  background-image: url('https://static.vecteezy.com/system/resources/previews/020/693/799/non_2x/subtle-gradient-background-with-pastel-colour-free-vector.jpg');
+
+}
+.body{
+  background-image: url('https://static.vecteezy.com/system/resources/previews/020/693/799/non_2x/subtle-gradient-background-with-pastel-colour-free-vector.jpg');
+}
+.phase {
+  font-size: 2rem;
+  margin: 1rem 0;
+  color: #4e8cff;
+  font-weight: bold;
+}
+
+.timer {
+  font-size: 3rem;
+  font-family: monospace;
+  margin: 0.5rem 0;
+}
+
+.round {
+  font-size: 1.2rem;
+  color: #777;
+}
+
+.breathing-circle {
+  margin: 2rem auto;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: #a0c4ff;
+  transition: all 3s ease-in-out;
+}
+
+.breathing-circle.inhale {
+  transform: scale(1.2);
+  background: #bde0fe;
+}
+
+.breathing-circle.hold {
+  background: #90e0ef;
+}
+
+.breathing-circle.exhale {
+  transform: scale(0.8);
+  background: #caf0f8;
+}
+
+.controls button {
+  margin: 0.5rem;
+  padding: 0.7rem 1.4rem;
+  background: #4e8cff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: 0.3s ease;
+}
+
+.controls button:hover {
+  background: #3a74d1;
+}
+
+.complete-msg {
+  font-size: 1.4rem;
+  color: #38b000;
+  margin: 1rem 0;
+}

@@ -1,0 +1,87 @@
+/* src/Planner/MoodTrackerPage.css */
+
+.mood-tracker-page {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #fffdf7;
+  border-radius: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', sans-serif;
+  color: #444;
+}
+
+.mood-tracker-page h2 {
+  text-align: center;
+  color: #555;
+  margin-bottom: 30px;
+  font-size: 2rem;
+}
+
+.mood-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.input-group label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #666;
+}
+
+.input-group input,
+.input-group select {
+  padding: 10px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+  background-color: #fdfaf5;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus,
+.input-group select:focus {
+  outline: none;
+  border-color: #c9c1b5;
+  background-color: #fffefb;
+}
+
+button[type='submit'] {
+  background-color: #f7cac9;
+  color: #333;
+  padding: 12px 20px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  align-self: flex-start;
+  transition: background-color 0.3s ease;
+}
+
+button[type='submit']:hover {
+  background-color: #f4b6b5;
+}
+
+.error {
+  color: #e57373;
+  font-weight: bold;
+  margin-top: -10px;
+}
+
+.no-data {
+  text-align: center;
+  font-style: italic;
+  color: #999;
+  margin-top: 30px;
+}
+
+.mood-chart {
+  margin-top: 40px;
+}

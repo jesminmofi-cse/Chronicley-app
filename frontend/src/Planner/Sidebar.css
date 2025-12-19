@@ -1,0 +1,52 @@
+.sidebar {
+  width: 200px;
+  height: 100vh;
+  background: linear-gradient(135deg, #d6e6f2, #fcefee);
+  padding: 1rem;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.sidebar h3 {
+  font-size: 1.5rem;
+  color: #4a4a4a;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.sidebar .brand {
+  text-decoration: none;
+  color: #222;
+  font-weight: bold;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 1rem 0;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #444;
+  transition: all 0.2s ease;
+}
+
+.sidebar a:hover {
+  color: #0066cc;
+  font-weight: bold;
+}
+.sidebar nav a {
+  display: block;
+  margin: 10px 0;
+  text-decoration: none;
+  color: #333;
+}
+
+.sidebar nav a.active {
+  font-weight: bold;
+  color: #5e60ce;
+}

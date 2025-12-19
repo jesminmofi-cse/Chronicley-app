@@ -1,0 +1,52 @@
+.photo-page{
+   font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+   font-style: oblique;
+   font-variant: small-caps;
+   font-size: larger;
+   padding: 2rem;
+   max-width: 800px;
+   margin: auto;
+
+}
+.photo-page h2{
+   color: black;
+}
+.photo-form{
+   padding:3px;
+   display: flex;
+   gap:10px;
+   margin-bottom: 20px;
+}
+.photo-form input[type='text']{
+   padding: 10px;
+   border: 1px solid #d9a7f0;
+   border-radius: 8px;
+   background-color: #ffffff;
+}
+.photo-grid p{
+   color: black;
+}
+.photo-grid{
+   gap: 1rem;
+   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+   display: grid;
+}
+.photo-card {
+   border: 1px solid #ddd;
+   border-radius: 8px;
+   overflow: hidden;
+   padding: 0.5rem;
+   position: relative;
+}
+.photo-card img{
+   width: 100%;
+   height: auto;
+   display: block;
+}
+.photo-card .icon{
+   position: absolute;
+   top: 8px;
+   right: 8px;
+   color: red;
+   cursor: pointer;
+}

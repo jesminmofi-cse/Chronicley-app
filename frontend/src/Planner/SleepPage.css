@@ -1,0 +1,41 @@
+.sleep-page {
+  background-color: #f0f0f0;
+  padding: 2rem;
+  border-radius: 16px;
+  max-width: 800px;
+  margin: auto;
+  color: #333;
+}
+.sleep-page h2 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+}
+input,
+button {
+  padding: 0.6rem;
+  border-radius: 8px;
+  border: 1px solid #aaa;
+}
+button {
+  background-color: #888;
+  color: #fff;
+  cursor: pointer;
+  transition: 0.3s;
+}
+button:hover {
+  background-color: #666;
+}
+.sleep-chart {
+  max-width: 600px;
+  margin: auto;
+}
+.error {
+  color: red;
+  text-align: center;
+}

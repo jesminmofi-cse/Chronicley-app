@@ -1,0 +1,73 @@
+.booktracker-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+  background: #fefefe;
+  border-radius: 12px;
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+}
+
+.booktracker-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  
+}
+
+.booktracker-form input,
+.booktracker-form textarea,
+.booktracker-form select,
+.booktracker-form button {
+  padding: 0.75rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.booktracker-form button {
+  background-color: #4caf50;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.booktracker-form button:hover {
+  background-color: #45a049;
+}
+
+.booktracker-items {
+  display: grid;
+  gap: 1rem;
+}
+
+.book-item {
+  display: flex;
+  gap: 1rem;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 1rem;
+  align-items: center;
+  background: #fafafa;
+}
+
+.book-image {
+  width: 100px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.book-info h3 {
+  margin: 0;
+}
+
+.book-info p {
+  margin: 0.25rem 0;
+}
+
+.empty-msg {
+  text-align: center;
+  color: #999;
+}
