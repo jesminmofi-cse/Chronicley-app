@@ -7,7 +7,7 @@ const app = express();
 
 //  CORS
 app.use(cors({
-  origin: 'http://localhost:3000','https://chronicley-app.onrender.com'
+  origin: 'https://chronicley-app.vercel.app',
   credentials: true
 }));
 
