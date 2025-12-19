@@ -5,64 +5,68 @@ require('dotenv').config();
 
 const app = express();
 
-//  CORS
+/* =========================
+   CORS CONFIG (IMPORTANT)
+   ========================= */
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://chronicley-app.vercel.app'
+];
+
 app.use(cors({
-  origin: 'https://chronicley-app.vercel.app',
+  origin: function (origin, callback) {
+    // allow requests with no origin (Postman, curl, server-to-server)
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 
-//  Middleware
+/* =========================
+   MIDDLEWARE
+   ========================= */
 app.use(express.json());
 
-//  route
-app.get('/', (req, res) => res.send("Welcome to the Chroniclely"));
+/* =========================
+   ROOT ROUTE
+   ========================= */
+app.get('/', (req, res) => {
+  res.send('Welcome to Chroniclely API 🌿');
+});
 
-//  Connect DB
+/* =========================
+   DATABASE
+   ========================= */
 const connectDB = require('./config/db');
 connectDB();
 
-//  Routes
-const authRoutes = require('./routes/authRoutes');
-app.use('/api/auth', authRoutes);
+/* =========================
+   ROUTES
+   ========================= */
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/journal', require('./routes/journalRoutes'));
+app.use('/api/tasks', require('./routes/taskRoutes'));
+app.use('/api/moods', require('./routes/moodRoutes'));
+app.use('/api/water', require('./routes/waterRoutes'));
+app.use('/api/sleep', require('./routes/sleepRoutes'));
+app.use('/api/yoga', require('./routes/yogaRoutes'));
+app.use('/api/gratitude', require('./routes/gratitudeRoutes'));
+app.use('/api/period', require('./routes/periodRoutes'));
+app.use('/api/wishlist', require('./routes/WishRoutes'));
+app.use('/api/meditations', require('./routes/meditationRoutes'));
+app.use('/api/breathing', require('./routes/breathingRoutes'));
+app.use('/api/books', require('./routes/bookRoutes'));
+app.use('/api/photos', require('./routes/photoRoutes'));
 
-const journalRoutes = require('./routes/journalRoutes');
-app.use('/api/journal', journalRoutes);
-
-const taskRoutes = require('./routes/taskRoutes');
-app.use('/api/tasks', taskRoutes);
-
-const moodRoutes = require('./routes/moodRoutes');
-app.use('/api/moods', moodRoutes);
-
-const waterRoutes = require('./routes/waterRoutes');
-app.use('/api/water', waterRoutes);
-
-const sleepRoutes = require('./routes/sleepRoutes');
-app.use('/api/sleep', sleepRoutes);
-
-const yogaRoutes = require('./routes/yogaRoutes');
-app.use('/api/yoga', yogaRoutes);
-
-const gratitudeRoutes = require('./routes/gratitudeRoutes');
-app.use('/api/gratitude', gratitudeRoutes);
-
-const periodRoutes = require('./routes/periodRoutes');
-app.use('/api/period', periodRoutes);
-
-const wishListRoutes = require('./routes/WishRoutes');
-app.use('/api/wishlist', wishListRoutes);
-
-const meditationRoutes = require('./routes/meditationRoutes');
-app.use('/api/meditations', meditationRoutes);
-
-const breathingRoutes = require('./routes/breathingRoutes');
-app.use('/api/breathing', breathingRoutes);
-
-const bookRoutes = require('./routes/bookRoutes');
-app.use('/api/books', bookRoutes);
-
-const photoRoutes= require('./routes/photoRoutes');
-app.use('/api/photos', photoRoutes);
-
+/* =========================
+   SERVER START
+   ========================= */
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
