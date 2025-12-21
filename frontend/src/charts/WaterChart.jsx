@@ -12,37 +12,62 @@ import {
   Legend,
 } from 'chart.js';
 
-ChartJS.register(LineElement, PointElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(
+  LineElement,
+  PointElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
 
 const WaterChart = () => {
   const [entries, setEntries] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchEntries = async () => {
       try {
         const token = localStorage.getItem('token');
+
         const res = await axios.get('/api/water', {
           headers: {
             Authorization: `Bearer ${token}`,
           },
           withCredentials: true,
         });
-        setEntries(res.data.slice(-7).reverse());
+
+        // 🛡️ SAFE ARRAY EXTRACTION (CRITICAL FIX)
+        const waterArray = Array.isArray(res.data?.data)
+          ? res.data.data
+          : Array.isArray(res.data)
+          ? res.data
+          : [];
+
+        setEntries(waterArray.slice(-7).reverse());
       } catch (err) {
         console.error('Error fetching water data:', err);
+        setEntries([]);
+      } finally {
+        setLoading(false);
       }
     };
+
     fetchEntries();
   }, []);
 
-  const data = {
-    labels: entries.map(entry =>
-      new Date(entry.date || entry.createdAt).toLocaleDateString()
+  const chartData = {
+    labels: entries.map((entry) =>
+      entry.date || entry.createdAt
+        ? new Date(entry.date || entry.createdAt).toLocaleDateString()
+        : 'Unknown'
     ),
     datasets: [
       {
         label: 'Water Intake (ml)',
-        data: entries.map(entry => entry.amount),
+        data: entries.map((entry) =>
+          typeof entry.amount === 'number' ? entry.amount : 0
+        ),
         borderColor: '#1E90FF',
         backgroundColor: 'rgba(135, 206, 250, 0.4)',
         fill: true,
@@ -58,7 +83,7 @@ const WaterChart = () => {
       legend: { display: true },
       tooltip: {
         callbacks: {
-          label: ctx => `${ctx.raw} ml`,
+          label: (ctx) => `${ctx.raw} ml`,
         },
       },
     },
@@ -76,7 +101,14 @@ const WaterChart = () => {
   return (
     <div>
       <h4>Water Intake</h4>
-      {entries.length > 0 ? <Line data={data} options={options} /> : <p>Loading...</p>}
+
+      {loading ? (
+        <p>Loading water data… 💧</p>
+      ) : entries.length === 0 ? (
+        <p>No water data yet</p>
+      ) : (
+        <Line data={chartData} options={options} />
+      )}
     </div>
   );
 };
