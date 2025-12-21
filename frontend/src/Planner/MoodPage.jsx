@@ -20,6 +20,8 @@ ChartJS.register(
   Legend
 );
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const MoodTrackerPage = () => {
   const [moodLogs, setMoodLogs] = useState([]);
   const [mood, setMood] = useState('');
@@ -38,21 +40,22 @@ const MoodTrackerPage = () => {
     try {
       setLoading(true);
 
-      const res = await axios.get('/api/moods', {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${API_URL}/api/moods`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      // 🛡️ BULLETPROOF ARRAY EXTRACTION
-      const moodArray = Array.isArray(res.data?.data)
-        ? res.data.data
-        : Array.isArray(res.data)
-        ? res.data
-        : [];
+      const raw = res?.data;
+      const moodArray =
+        Array.isArray(raw?.data) ? raw.data :
+        Array.isArray(raw) ? raw :
+        [];
 
       setMoodLogs(moodArray);
     } catch (err) {
-      console.error('Error fetching mood data:', err);
+      console.error('Failed to load mood data:', err);
       setMoodLogs([]);
       setError('Failed to load mood data');
     } finally {
@@ -66,11 +69,10 @@ const MoodTrackerPage = () => {
 
     try {
       await axios.post(
-        '/api/moods',
+        `${API_URL}/api/moods`,
         { mood, date },
         {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
         }
       );
 
@@ -83,7 +85,6 @@ const MoodTrackerPage = () => {
     }
   };
 
-  // 🎨 Pastel shades for emotions
   const pastelColors = {
     happy: '#fce1e4',
     sad: '#cde2f2',
@@ -93,8 +94,7 @@ const MoodTrackerPage = () => {
     anxious: '#f5e1fd',
   };
 
-  // 🛡️ SAFE CHART DATA (NO ASSUMPTIONS)
-  const chartData = () => {
+  const buildChartData = () => {
     const moodCount = {
       happy: 0,
       sad: 0,
@@ -104,25 +104,21 @@ const MoodTrackerPage = () => {
       anxious: 0,
     };
 
-    if (Array.isArray(moodLogs)) {
-      moodLogs.forEach((log) => {
-        if (log?.mood && moodCount[log.mood] !== undefined) {
-          moodCount[log.mood]++;
-        }
-      });
-    }
-
-    const labels = Object.keys(moodCount);
-    const data = Object.values(moodCount);
-    const backgroundColors = labels.map((m) => pastelColors[m]);
+    moodLogs.forEach((log) => {
+      if (log?.mood && moodCount[log.mood] !== undefined) {
+        moodCount[log.mood]++;
+      }
+    });
 
     return {
-      labels,
+      labels: Object.keys(moodCount),
       datasets: [
         {
           label: 'Mood Frequency',
-          data,
-          backgroundColor: backgroundColors,
+          data: Object.values(moodCount),
+          backgroundColor: Object.keys(moodCount).map(
+            (m) => pastelColors[m]
+          ),
           borderRadius: 10,
         },
       ],
@@ -155,32 +151,26 @@ const MoodTrackerPage = () => {
       <h2>Mood Tracker</h2>
 
       <form className="mood-form" onSubmit={handleAddMood}>
-        <div className="input-group">
-          <label>Select Mood</label>
-          <select
-            value={mood}
-            onChange={(e) => setMood(e.target.value)}
-            required
-          >
-            <option value="">-- Choose --</option>
-            <option value="happy">Happy</option>
-            <option value="sad">Sad</option>
-            <option value="angry">Angry</option>
-            <option value="neutral">Neutral</option>
-            <option value="excited">Excited</option>
-            <option value="anxious">Anxious</option>
-          </select>
-        </div>
+        <select
+          value={mood}
+          onChange={(e) => setMood(e.target.value)}
+          required
+        >
+          <option value="">-- Choose Mood --</option>
+          <option value="happy">Happy</option>
+          <option value="sad">Sad</option>
+          <option value="angry">Angry</option>
+          <option value="neutral">Neutral</option>
+          <option value="excited">Excited</option>
+          <option value="anxious">Anxious</option>
+        </select>
 
-        <div className="input-group">
-          <label>Date</label>
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-          />
-        </div>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          required
+        />
 
         <button type="submit">Add Mood</button>
       </form>
@@ -195,7 +185,7 @@ const MoodTrackerPage = () => {
         </p>
       ) : (
         <div className="mood-chart">
-          <Bar data={chartData()} options={chartOptions} />
+          <Bar data={buildChartData()} options={chartOptions} />
         </div>
       )}
     </div>
