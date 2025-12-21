@@ -1,154 +1,138 @@
-// src/Planner/BookTrackerPage.jsx
+// frontend/src/charts/YogaChart.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import './Book.css';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from 'chart.js';
 
-const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dxd5rhq4t/image/upload';
-const UPLOAD_PRESET = 'chroniclely';
+ChartJS.register(
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
 
-const BookTrackerPage = () => {
-  const [books, setBooks] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const [title, setTitle] = useState('');
-  const [startedDate, setStartedDate] = useState('');
-  const [finishedDate, setFinishedDate] = useState('');
-  const [rating, setRating] = useState('');
-  const [status, setStatus] = useState('');
-  const [review, setReview] = useState('');
-  const [tags, setTags] = useState('');
-  const [summary, setSummary] = useState('');
-  const [imageFile, setImageFile] = useState(null);
-
-  const token = localStorage.getItem('token');
-
-  const fetchBooks = async () => {
-    try {
-      const res = await axios.get('/api/books', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // 🛡️ ABSOLUTE SAFE NORMALIZATION
-      const raw = res?.data;
-      const safeBooks =
-        Array.isArray(raw?.data) ? raw.data :
-        Array.isArray(raw) ? raw :
-        [];
-
-      setBooks(safeBooks);
-    } catch (err) {
-      console.error('Fetch books failed:', err);
-      setBooks([]);
-    }
-  };
+const YogaChart = () => {
+  const [yogaLogs, setYogaLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchBooks();
+    const fetchYogaData = async () => {
+      try {
+        const token = localStorage.getItem('token');
+
+        const res = await axios.get('/api/yoga', {
+          headers: { Authorization: `Bearer ${token}` },
+          withCredentials: true,
+        });
+
+        // 🛡️ ABSOLUTE SAFE EXTRACTION
+        const raw = res?.data;
+        const yogaArray =
+          Array.isArray(raw?.data) ? raw.data :
+          Array.isArray(raw) ? raw :
+          [];
+
+        setYogaLogs(yogaArray);
+      } catch (err) {
+        console.error('Error fetching yoga data:', err);
+        setYogaLogs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchYogaData();
   }, []);
 
-  const uploadImage = async () => {
-    if (!imageFile) return '';
-    const formData = new FormData();
-    formData.append('file', imageFile);
-    formData.append('upload_preset', UPLOAD_PRESET);
-
-    try {
-      const res = await axios.post(CLOUDINARY_URL, formData);
-      return res.data.secure_url || '';
-    } catch {
-      return '';
-    }
+  // 🛡️ SAFE DAY AGGREGATION
+  const dayMap = {
+    Sunday: 0,
+    Monday: 0,
+    Tuesday: 0,
+    Wednesday: 0,
+    Thursday: 0,
+    Friday: 0,
+    Saturday: 0,
   };
 
-  const handleAddBook = async (e) => {
-    e.preventDefault();
-    setLoading(true);
+  if (Array.isArray(yogaLogs)) {
+    for (let i = 0; i < yogaLogs.length; i++) {
+      const log = yogaLogs[i];
+      if (!log?.date || typeof log.duration !== 'number') continue;
 
-    try {
-      const imageUrl = await uploadImage();
+      const day = new Date(log.date).toLocaleDateString('en-US', {
+        weekday: 'long',
+      });
 
-      await axios.post(
-        '/api/books',
-        {
-          title,
-          startedDate,
-          finishedDate,
-          rating: rating ? Number(rating) : undefined,
-          status,
-          review,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-          summary,
-          imageUrl,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
-      // reset form
-      setTitle('');
-      setStartedDate('');
-      setFinishedDate('');
-      setRating('');
-      setStatus('');
-      setReview('');
-      setTags('');
-      setSummary('');
-      setImageFile(null);
-
-      fetchBooks();
-    } finally {
-      setLoading(false);
+      if (dayMap[day] !== undefined) {
+        dayMap[day] += log.duration;
+      }
     }
+  }
+
+  const chartData = {
+    labels: Object.keys(dayMap),
+    datasets: [
+      {
+        label: 'Yoga Minutes per Day',
+        data: Object.values(dayMap),
+        backgroundColor: [
+          '#f5f5dc',
+          '#ede3c3',
+          '#e5d8c0',
+          '#d6c7af',
+          '#c8b69f',
+          '#baa58f',
+          '#ac947f',
+        ],
+        borderRadius: 8,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => `${ctx.raw} minutes`,
+        },
+      },
+    },
+    scales: {
+      x: {
+        beginAtZero: true,
+        title: { display: true, text: 'Minutes' },
+      },
+      y: {
+        title: { display: true, text: 'Day of the Week' },
+      },
+    },
   };
 
   return (
-    <div className="booktracker-container">
-      <h2>Book Tracker</h2>
+    <div>
+      <h4>Yoga Tracker</h4>
 
-      <form className="booktracker-form" onSubmit={handleAddBook}>
-        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Book Title" required />
-        <input type="date" value={startedDate} onChange={e => setStartedDate(e.target.value)} />
-        <input type="date" value={finishedDate} onChange={e => setFinishedDate(e.target.value)} />
-        <input type="number" min="1" max="5" value={rating} onChange={e => setRating(e.target.value)} />
-        <select value={status} onChange={e => setStatus(e.target.value)} required>
-          <option value="">-- Status --</option>
-          <option value="to read">To Read</option>
-          <option value="reading">Reading</option>
-          <option value="completed">Completed</option>
-        </select>
-        <textarea value={review} onChange={e => setReview(e.target.value)} placeholder="Notes" />
-        <input value={tags} onChange={e => setTags(e.target.value)} placeholder="Tags" />
-        <textarea value={summary} onChange={e => setSummary(e.target.value)} placeholder="Summary" />
-        <input type="file" onChange={e => setImageFile(e.target.files[0])} />
-        <button type="submit" disabled={loading}>
-          {loading ? 'Adding…' : 'Add Book'}
-        </button>
-      </form>
-
-      <div className="booktracker-items">
-        {books.length === 0 ? (
-          <p>No books yet 📚</p>
-        ) : (
-          books.map((book) => (
-            <div key={book._id} className="book-item">
-              {book.imageUrl && <img src={book.imageUrl} alt={book.title} />}
-              <h3>{book.title}</h3>
-              {book.status && <p>Status: {book.status}</p>}
-              {Number.isInteger(book.rating) && (
-                <p>Rating: {'⭐'.repeat(book.rating)}</p>
-              )}
-              {Array.isArray(book.tags) && book.tags.length > 0 && (
-                <p>Tags: {book.tags.join(', ')}</p>
-              )}
-              {book.startedDate && <p>Started: {new Date(book.startedDate).toLocaleDateString()}</p>}
-              {book.finishedDate && <p>Finished: {new Date(book.finishedDate).toLocaleDateString()}</p>}
-              {book.review && <p>{book.review}</p>}
-              {book.summary && <p>{book.summary}</p>}
-            </div>
-          ))
-        )}
-      </div>
+      {loading ? (
+        <p>Loading yoga data… 🧘‍♀️</p>
+      ) : yogaLogs.length === 0 ? (
+        <p>No yoga data yet</p>
+      ) : (
+        <Bar data={chartData} options={chartOptions} />
+      )}
     </div>
   );
 };
 
-export default BookTrackerPage;
+export default YogaChart;
