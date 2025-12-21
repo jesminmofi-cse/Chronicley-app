@@ -10,7 +10,7 @@ import {
   LineElement,
   Filler,
   Tooltip,
-  Legend
+  Legend,
 } from 'chart.js';
 
 ChartJS.register(
@@ -21,6 +21,8 @@ ChartJS.register(
   Tooltip,
   Legend
 );
+
+const API_URL = process.env.REACT_APP_API_URL;
 
 const SleepPage = () => {
   const [sleepEntries, setSleepEntries] = useState([]);
@@ -40,24 +42,25 @@ const SleepPage = () => {
     try {
       setLoading(true);
 
-      const res = await axios.get('/api/sleep', {
-        headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${API_URL}/api/sleep`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      // 🛡️ BULLETPROOF DATA EXTRACTION
-      const sleepArray = Array.isArray(res.data?.data)
-        ? res.data.data
-        : Array.isArray(res.data)
-        ? res.data
-        : [];
+      // 🛡️ SAFE NORMALIZATION
+      const raw = res?.data;
+      const sleepArray =
+        Array.isArray(raw?.data) ? raw.data :
+        Array.isArray(raw) ? raw :
+        [];
 
-      // last 7 entries, latest first
       setSleepEntries(sleepArray.slice(-7).reverse());
     } catch (err) {
-      console.error('Error fetching sleep data:', err);
-      setError('Failed to load sleep data');
+      console.error('Failed to load sleep data:', err);
       setSleepEntries([]);
+      setError('Failed to load sleep data');
     } finally {
       setLoading(false);
     }
@@ -69,11 +72,10 @@ const SleepPage = () => {
 
     try {
       await axios.post(
-        '/api/sleep',
+        `${API_URL}/api/sleep`,
         { sleepStart, sleepEnd },
         {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
         }
       );
 
@@ -81,14 +83,13 @@ const SleepPage = () => {
       setSleepEnd('');
       fetchSleepData();
     } catch (err) {
-      console.error('Error adding sleep entry:', err);
+      console.error('Failed to add sleep entry:', err);
       setError(err.response?.data?.message || 'Failed to add sleep entry');
     }
   };
 
-  // 🛡️ SAFE CHART DATA (no assumptions)
   const chartData = {
-    labels: sleepEntries.map(entry =>
+    labels: sleepEntries.map((entry) =>
       entry.sleepStart
         ? new Date(entry.sleepStart).toLocaleDateString()
         : 'Unknown'
@@ -96,7 +97,7 @@ const SleepPage = () => {
     datasets: [
       {
         label: 'Sleep Duration (hrs)',
-        data: sleepEntries.map(entry =>
+        data: sleepEntries.map((entry) =>
           typeof entry.duration === 'number' ? entry.duration : 0
         ),
         backgroundColor: 'rgba(128, 128, 128, 0.4)',
