@@ -1,3 +1,4 @@
+// src/Planner/YogaPage.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './YogaPage.css';
@@ -11,7 +12,13 @@ import {
   Legend,
 } from 'chart.js';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
 
 const YogaPage = () => {
   const [yogaLogs, setYogaLogs] = useState([]);
@@ -19,49 +26,71 @@ const YogaPage = () => {
   const [duration, setDuration] = useState('');
   const [date, setDate] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchYogaData();
+    // eslint-disable-next-line
   }, []);
 
   const fetchYogaData = async () => {
     try {
+      setLoading(true);
+
       const res = await axios.get('/api/yoga', {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
-      setYogaLogs(res.data);
+
+      // 🛡️ SAFE ARRAY NORMALIZATION (CRITICAL)
+      const raw = res?.data;
+      const yogaArray =
+        Array.isArray(raw?.data) ? raw.data :
+        Array.isArray(raw) ? raw :
+        [];
+
+      setYogaLogs(yogaArray);
     } catch (err) {
-      console.error(err);
+      console.error('Failed to load yoga data:', err);
+      setYogaLogs([]);
       setError('Failed to load yoga data');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAddYoga = async (e) => {
     e.preventDefault();
+    setError('');
+
     try {
       await axios.post(
         '/api/yoga',
-        { type: sessionType, duration, date },
+        {
+          type: sessionType,
+          duration: Number(duration),
+          date,
+        },
         {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         }
       );
+
       setSessionType('');
       setDuration('');
       setDate('');
       fetchYogaData();
     } catch (err) {
-      console.error('❌ Failed', err.message);
+      console.error('Failed to add yoga session:', err);
       setError(err.response?.data?.message || 'Failed to add yoga session');
     }
   };
 
-  // 🧘‍♀️ Group durations by weekday
-  const chartData = () => {
+  // 🧘‍♀️ SAFE GROUPING BY WEEKDAY
+  const buildChartData = () => {
     const dayMap = {
       Sunday: 0,
       Monday: 0,
@@ -72,31 +101,35 @@ const YogaPage = () => {
       Saturday: 0,
     };
 
-    yogaLogs.forEach((log) => {
-      const day = new Date(log.date).toLocaleDateString('en-US', { weekday: 'long' });
-      dayMap[day] += log.duration;
-    });
+    if (Array.isArray(yogaLogs)) {
+      yogaLogs.forEach((log) => {
+        if (!log?.date || typeof log.duration !== 'number') return;
 
-    const labels = Object.keys(dayMap);
-    const data = Object.values(dayMap);
+        const day = new Date(log.date).toLocaleDateString('en-US', {
+          weekday: 'long',
+        });
 
-    const beigePalette = [
-      '#f5f5dc', // Sunday
-      '#ede3c3', // Monday
-      '#e5d8c0', // Tuesday
-      '#d6c7af', // Wednesday
-      '#c8b69f', // Thursday
-      '#baa58f', // Friday
-      '#ac947f', // Saturday
-    ];
+        if (dayMap[day] !== undefined) {
+          dayMap[day] += log.duration;
+        }
+      });
+    }
 
     return {
-      labels,
+      labels: Object.keys(dayMap),
       datasets: [
         {
           label: 'Yoga Minutes per Day',
-          data,
-          backgroundColor: beigePalette,
+          data: Object.values(dayMap),
+          backgroundColor: [
+            '#f5f5dc',
+            '#ede3c3',
+            '#e5d8c0',
+            '#d6c7af',
+            '#c8b69f',
+            '#baa58f',
+            '#ac947f',
+          ],
           borderRadius: 10,
         },
       ],
@@ -104,12 +137,11 @@ const YogaPage = () => {
   };
 
   const chartOptions = {
-    indexAxis: 'y', // horizontal bar
+    indexAxis: 'y',
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
-      legend: {
-        display: false,
-      },
+      legend: { display: false },
       tooltip: {
         callbacks: {
           label: (ctx) => `${ctx.raw} minutes`,
@@ -119,16 +151,10 @@ const YogaPage = () => {
     scales: {
       x: {
         beginAtZero: true,
-        title: {
-          display: true,
-          text: 'Minutes',
-        },
+        title: { display: true, text: 'Minutes' },
       },
       y: {
-        title: {
-          display: true,
-          text: 'Day of the Week',
-        },
+        title: { display: true, text: 'Day of the Week' },
       },
     },
   };
@@ -147,6 +173,7 @@ const YogaPage = () => {
             required
           />
         </div>
+
         <div className="input-group">
           <label>Duration (mins)</label>
           <input
@@ -156,6 +183,7 @@ const YogaPage = () => {
             required
           />
         </div>
+
         <div className="input-group">
           <label>Date</label>
           <input
@@ -165,16 +193,21 @@ const YogaPage = () => {
             required
           />
         </div>
+
         <button type="submit">Add Session</button>
       </form>
 
       {error && <p className="error">{error}</p>}
 
-      {yogaLogs.length === 0 ? (
-        <p className="no-data">No yoga data yet. Let's start your stretch streak! 🧘‍♀️</p>
+      {loading ? (
+        <p className="no-data">Loading yoga data… 🧘‍♀️</p>
+      ) : yogaLogs.length === 0 ? (
+        <p className="no-data">
+          No yoga data yet. Let’s start your stretch streak! 🌿
+        </p>
       ) : (
-        <div className="yoga-chart">
-          <Bar data={chartData()} options={chartOptions} />
+        <div className="yoga-chart" style={{ minHeight: 300 }}>
+          <Bar data={buildChartData()} options={chartOptions} />
         </div>
       )}
     </div>
