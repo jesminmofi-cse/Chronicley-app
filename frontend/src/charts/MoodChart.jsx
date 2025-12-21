@@ -1,12 +1,30 @@
-// MoodChart.jsx
+// src/components/Home/MoodChart.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
-import { Chart as ChartJS, BarElement, CategoryScale, LinearScale, Tooltip, Legend} from 'chart.js';
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+import {
+  Chart as ChartJS,
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
+
 const MoodChart = () => {
   const [moodLogs, setMoodLogs] = useState([]);
+  const [loading, setLoading] = useState(true);
+
   const token = localStorage.getItem('token');
+
   useEffect(() => {
     const fetchMoodLogs = async () => {
       try {
@@ -14,12 +32,26 @@ const MoodChart = () => {
           headers: { Authorization: `Bearer ${token}` },
           withCredentials: true,
         });
-        setMoodLogs(res.data);
+
+        // 🛡️ SAFE ARRAY EXTRACTION (CRITICAL FIX)
+        const moodArray = Array.isArray(res.data?.data)
+          ? res.data.data
+          : Array.isArray(res.data)
+          ? res.data
+          : [];
+
+        setMoodLogs(moodArray);
       } catch (err) {
         console.error('Failed to fetch mood data:', err);
-      }};
+        setMoodLogs([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchMoodLogs();
   }, [token]);
+
   const pastelColors = {
     happy: '#fce1e4',
     sad: '#cde2f2',
@@ -28,6 +60,8 @@ const MoodChart = () => {
     excited: '#d5f4e6',
     anxious: '#f5e1fd',
   };
+
+  // 🛡️ SAFE CHART DATA (NO ASSUMPTIONS)
   const chartData = () => {
     const moodCount = {
       happy: 0,
@@ -37,13 +71,19 @@ const MoodChart = () => {
       excited: 0,
       anxious: 0,
     };
-    moodLogs.forEach((log) => {
-      if (moodCount[log.mood] !== undefined) {
-        moodCount[log.mood]++;
-      }});
+
+    if (Array.isArray(moodLogs)) {
+      moodLogs.forEach((log) => {
+        if (log?.mood && moodCount[log.mood] !== undefined) {
+          moodCount[log.mood]++;
+        }
+      });
+    }
+
     const labels = Object.keys(moodCount);
     const data = Object.values(moodCount);
     const backgroundColors = labels.map((m) => pastelColors[m]);
+
     return {
       labels,
       datasets: [
@@ -56,6 +96,7 @@ const MoodChart = () => {
       ],
     };
   };
+
   const chartOptions = {
     responsive: true,
     plugins: {
@@ -80,7 +121,14 @@ const MoodChart = () => {
   return (
     <div>
       <h4>Mood Tracker</h4>
-      {moodLogs.length > 0 ? <Bar data={chartData()} options={chartOptions} /> : <p>No mood data available</p>}
+
+      {loading ? (
+        <p>Loading mood data… 🌈</p>
+      ) : moodLogs.length === 0 ? (
+        <p>No mood data available</p>
+      ) : (
+        <Bar data={chartData()} options={chartOptions} />
+      )}
     </div>
   );
 };
