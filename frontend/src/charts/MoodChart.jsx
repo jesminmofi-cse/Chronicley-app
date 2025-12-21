@@ -19,6 +19,8 @@ ChartJS.register(
   Legend
 );
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const MoodChart = () => {
   const [moodLogs, setMoodLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,12 +30,11 @@ const MoodChart = () => {
   useEffect(() => {
     const fetchMoodLogs = async () => {
       try {
-        const res = await axios.get('/api/moods', {
+        const res = await axios.get(`${API_URL}/api/moods`, {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
         });
 
-        // ✅ ABSOLUTE SAFE EXTRACTION
+        // 🛡️ SAFE EXTRACTION
         const raw = res?.data;
         const moodArray =
           Array.isArray(raw?.data) ? raw.data :
@@ -88,7 +89,7 @@ const MoodChart = () => {
         {
           label: 'Mood Frequency',
           data: Object.values(moodCount),
-          backgroundColor: labels.map(m => pastelColors[m]),
+          backgroundColor: labels.map((m) => pastelColors[m]),
           borderRadius: 10,
         },
       ],
