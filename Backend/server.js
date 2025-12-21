@@ -6,15 +6,15 @@ require('dotenv').config();
 const app = express();
 
 /* =========================
-   CORS CONFIG (IMPORTANT)
+   CORS CONFIG (FIXED)
    ========================= */
 const allowedOrigins = [
   'https://chronicley-app.vercel.app'
 ];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
-    // allow requests with no origin (Postman, curl, server-to-server)
+    // Allow server-to-server, Postman, curl
     if (!origin) return callback(null, true);
 
     if (allowedOrigins.includes(origin)) {
@@ -23,8 +23,13 @@ app.use(cors({
       callback(new Error('Not allowed by CORS'));
     }
   },
-  credentials: true
-}));
+  credentials: true,
+};
+
+app.use(cors(corsOptions));
+
+// 🔥 CRITICAL: allow preflight OPTIONS requests
+app.options('*', cors(corsOptions));
 
 /* =========================
    MIDDLEWARE
