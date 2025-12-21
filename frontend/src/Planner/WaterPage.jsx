@@ -22,6 +22,8 @@ ChartJS.register(
   Legend
 );
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const WaterPage = () => {
   const [entries, setEntries] = useState([]);
   const [amount, setAmount] = useState('');
@@ -40,23 +42,22 @@ const WaterPage = () => {
     try {
       setLoading(true);
 
-      const res = await axios.get('/api/water', {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        withCredentials: true,
-      });
+      const res = await axios.get(
+        `${API_URL}/api/water`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
-      // 🛡️ BULLETPROOF ARRAY EXTRACTION
-      const waterArray = Array.isArray(res.data?.data)
-        ? res.data.data
-        : Array.isArray(res.data)
-        ? res.data
-        : [];
+      const raw = res?.data;
+      const waterArray =
+        Array.isArray(raw?.data) ? raw.data :
+        Array.isArray(raw) ? raw :
+        [];
 
       setEntries(waterArray.slice().reverse());
     } catch (err) {
-      console.error('💦 Error fetching water entries:', err);
+      console.error('Failed to load water data:', err);
       setEntries([]);
       setError('Failed to load water data');
     } finally {
@@ -77,13 +78,10 @@ const WaterPage = () => {
 
     try {
       await axios.post(
-        '/api/water',
+        `${API_URL}/api/water`,
         { amount: Number(amount), date: entryDate },
         {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          withCredentials: true,
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -91,12 +89,11 @@ const WaterPage = () => {
       setDate('');
       fetchEntries();
     } catch (err) {
-      console.error('🚱 Failed to add entry:', err);
-      setError('Failed to log water intake');
+      console.error('Failed to log water intake:', err);
+      setError(err.response?.data?.message || 'Failed to log water intake');
     }
   };
 
-  // 🛡️ SAFE CHART DATA
   const chartData = {
     labels: entries.map((entry) =>
       entry.date || entry.createdAt
