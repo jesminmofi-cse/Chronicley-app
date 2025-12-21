@@ -12,35 +12,58 @@ import {
   Legend,
 } from 'chart.js';
 
-ChartJS.register(BarElement, CategoryScale, LinearScale, Tooltip, Legend);
+ChartJS.register(
+  BarElement,
+  CategoryScale,
+  LinearScale,
+  Tooltip,
+  Legend
+);
 
 const MoodTrackerPage = () => {
   const [moodLogs, setMoodLogs] = useState([]);
   const [mood, setMood] = useState('');
   const [date, setDate] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchMoodLogs();
+    // eslint-disable-next-line
   }, []);
 
   const fetchMoodLogs = async () => {
     try {
+      setLoading(true);
+
       const res = await axios.get('/api/moods', {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
-      setMoodLogs(res.data);
+
+      // 🛡️ BULLETPROOF ARRAY EXTRACTION
+      const moodArray = Array.isArray(res.data?.data)
+        ? res.data.data
+        : Array.isArray(res.data)
+        ? res.data
+        : [];
+
+      setMoodLogs(moodArray);
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching mood data:', err);
+      setMoodLogs([]);
       setError('Failed to load mood data');
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAddMood = async (e) => {
     e.preventDefault();
+    setError('');
+
     try {
       await axios.post(
         '/api/moods',
@@ -50,17 +73,17 @@ const MoodTrackerPage = () => {
           withCredentials: true,
         }
       );
+
       setMood('');
       setDate('');
       fetchMoodLogs();
     } catch (err) {
-      console.error(' Failed', err.response?.data || err.message);
-
+      console.error('Failed to add mood:', err);
       setError(err.response?.data?.message || 'Failed to add mood');
     }
   };
 
-  // Pastel shades for emotions
+  // 🎨 Pastel shades for emotions
   const pastelColors = {
     happy: '#fce1e4',
     sad: '#cde2f2',
@@ -70,6 +93,7 @@ const MoodTrackerPage = () => {
     anxious: '#f5e1fd',
   };
 
+  // 🛡️ SAFE CHART DATA (NO ASSUMPTIONS)
   const chartData = () => {
     const moodCount = {
       happy: 0,
@@ -80,11 +104,13 @@ const MoodTrackerPage = () => {
       anxious: 0,
     };
 
-    moodLogs.forEach((log) => {
-      if (moodCount[log.mood] !== undefined) {
-        moodCount[log.mood]++;
-      }
-    });
+    if (Array.isArray(moodLogs)) {
+      moodLogs.forEach((log) => {
+        if (log?.mood && moodCount[log.mood] !== undefined) {
+          moodCount[log.mood]++;
+        }
+      });
+    }
 
     const labels = Object.keys(moodCount);
     const data = Object.values(moodCount);
@@ -131,7 +157,11 @@ const MoodTrackerPage = () => {
       <form className="mood-form" onSubmit={handleAddMood}>
         <div className="input-group">
           <label>Select Mood</label>
-          <select value={mood} onChange={(e) => setMood(e.target.value)} required>
+          <select
+            value={mood}
+            onChange={(e) => setMood(e.target.value)}
+            required
+          >
             <option value="">-- Choose --</option>
             <option value="happy">Happy</option>
             <option value="sad">Sad</option>
@@ -141,6 +171,7 @@ const MoodTrackerPage = () => {
             <option value="anxious">Anxious</option>
           </select>
         </div>
+
         <div className="input-group">
           <label>Date</label>
           <input
@@ -150,13 +181,18 @@ const MoodTrackerPage = () => {
             required
           />
         </div>
+
         <button type="submit">Add Mood</button>
       </form>
 
       {error && <p className="error">{error}</p>}
 
-      {moodLogs.length === 0 ? (
-        <p className="no-data">No mood data yet. How are you feeling today? 🌦️</p>
+      {loading ? (
+        <p className="no-data">Loading mood data… 🌦️</p>
+      ) : moodLogs.length === 0 ? (
+        <p className="no-data">
+          No mood data yet. How are you feeling today? 🌈
+        </p>
       ) : (
         <div className="mood-chart">
           <Bar data={chartData()} options={chartOptions} />
@@ -165,4 +201,5 @@ const MoodTrackerPage = () => {
     </div>
   );
 };
+
 export default MoodTrackerPage;
