@@ -27,28 +27,46 @@ const SleepPage = () => {
   const [sleepStart, setSleepStart] = useState('');
   const [sleepEnd, setSleepEnd] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const token = localStorage.getItem('token');
 
   useEffect(() => {
     fetchSleepData();
+    // eslint-disable-next-line
   }, []);
 
   const fetchSleepData = async () => {
     try {
+      setLoading(true);
+
       const res = await axios.get('/api/sleep', {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
-      setSleepEntries(res.data.slice(0, 7).reverse());
+
+      // 🛡️ BULLETPROOF DATA EXTRACTION
+      const sleepArray = Array.isArray(res.data?.data)
+        ? res.data.data
+        : Array.isArray(res.data)
+        ? res.data
+        : [];
+
+      // last 7 entries, latest first
+      setSleepEntries(sleepArray.slice(-7).reverse());
     } catch (err) {
-      console.error(err);
+      console.error('Error fetching sleep data:', err);
       setError('Failed to load sleep data');
+      setSleepEntries([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleAddSleep = async (e) => {
     e.preventDefault();
+    setError('');
+
     try {
       await axios.post(
         '/api/sleep',
@@ -58,23 +76,29 @@ const SleepPage = () => {
           withCredentials: true,
         }
       );
+
       setSleepStart('');
       setSleepEnd('');
       fetchSleepData();
     } catch (err) {
-      console.error(err);
+      console.error('Error adding sleep entry:', err);
       setError(err.response?.data?.message || 'Failed to add sleep entry');
     }
   };
 
-  const data = {
+  // 🛡️ SAFE CHART DATA (no assumptions)
+  const chartData = {
     labels: sleepEntries.map(entry =>
-      new Date(entry.sleepStart).toLocaleDateString()
+      entry.sleepStart
+        ? new Date(entry.sleepStart).toLocaleDateString()
+        : 'Unknown'
     ),
     datasets: [
       {
         label: 'Sleep Duration (hrs)',
-        data: sleepEntries.map(entry => entry.duration),
+        data: sleepEntries.map(entry =>
+          typeof entry.duration === 'number' ? entry.duration : 0
+        ),
         backgroundColor: 'rgba(128, 128, 128, 0.4)',
         borderColor: '#888',
         pointBackgroundColor: '#ccc',
@@ -83,7 +107,7 @@ const SleepPage = () => {
     ],
   };
 
-  const options = {
+  const chartOptions = {
     scales: {
       r: {
         angleLines: { display: true },
@@ -108,6 +132,7 @@ const SleepPage = () => {
             required
           />
         </div>
+
         <div className="input-group">
           <label>Sleep End</label>
           <input
@@ -117,16 +142,21 @@ const SleepPage = () => {
             required
           />
         </div>
+
         <button type="submit">Add Entry</button>
       </form>
 
       {error && <p className="error">{error}</p>}
 
-      {sleepEntries.length === 0 ? (
-        <p className="no-data">No sleep data yet. Start logging to track your rest! 😴</p>
+      {loading ? (
+        <p className="no-data">Loading sleep data… 😴</p>
+      ) : sleepEntries.length === 0 ? (
+        <p className="no-data">
+          No sleep data yet. Start logging to track your rest! 🌙
+        </p>
       ) : (
         <div className="sleep-chart">
-          <Radar data={data} options={options} />
+          <Radar data={chartData} options={chartOptions} />
         </div>
       )}
     </div>
