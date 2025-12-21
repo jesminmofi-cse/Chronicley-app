@@ -1,4 +1,4 @@
-// src/components/Home/MoodChart.jsx
+// frontend/src/charts/MoodChart.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Bar } from 'react-chartjs-2';
@@ -33,16 +33,16 @@ const MoodChart = () => {
           withCredentials: true,
         });
 
-        // 🛡️ SAFE ARRAY EXTRACTION (CRITICAL FIX)
-        const moodArray = Array.isArray(res.data?.data)
-          ? res.data.data
-          : Array.isArray(res.data)
-          ? res.data
-          : [];
+        // ✅ ABSOLUTE SAFE EXTRACTION
+        const raw = res?.data;
+        const moodArray =
+          Array.isArray(raw?.data) ? raw.data :
+          Array.isArray(raw) ? raw :
+          [];
 
         setMoodLogs(moodArray);
       } catch (err) {
-        console.error('Failed to fetch mood data:', err);
+        console.error('MoodChart fetch error:', err);
         setMoodLogs([]);
       } finally {
         setLoading(false);
@@ -61,8 +61,7 @@ const MoodChart = () => {
     anxious: '#f5e1fd',
   };
 
-  // 🛡️ SAFE CHART DATA (NO ASSUMPTIONS)
-  const chartData = () => {
+  const buildChartData = () => {
     const moodCount = {
       happy: 0,
       sad: 0,
@@ -73,49 +72,27 @@ const MoodChart = () => {
     };
 
     if (Array.isArray(moodLogs)) {
-      moodLogs.forEach((log) => {
-        if (log?.mood && moodCount[log.mood] !== undefined) {
-          moodCount[log.mood]++;
+      for (let i = 0; i < moodLogs.length; i++) {
+        const mood = moodLogs[i]?.mood;
+        if (moodCount[mood] !== undefined) {
+          moodCount[mood]++;
         }
-      });
+      }
     }
 
     const labels = Object.keys(moodCount);
-    const data = Object.values(moodCount);
-    const backgroundColors = labels.map((m) => pastelColors[m]);
 
     return {
       labels,
       datasets: [
         {
           label: 'Mood Frequency',
-          data,
-          backgroundColor: backgroundColors,
+          data: Object.values(moodCount),
+          backgroundColor: labels.map(m => pastelColors[m]),
           borderRadius: 10,
         },
       ],
     };
-  };
-
-  const chartOptions = {
-    responsive: true,
-    plugins: {
-      legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: (ctx) => `${ctx.raw} entries`,
-        },
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: { display: true, text: 'Mood Count' },
-      },
-      x: {
-        title: { display: true, text: 'Moods' },
-      },
-    },
   };
 
   return (
@@ -127,7 +104,7 @@ const MoodChart = () => {
       ) : moodLogs.length === 0 ? (
         <p>No mood data available</p>
       ) : (
-        <Bar data={chartData()} options={chartOptions} />
+        <Bar data={buildChartData()} />
       )}
     </div>
   );
