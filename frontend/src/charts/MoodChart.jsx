@@ -28,12 +28,13 @@ const MoodChart = () => {
   useEffect(() => {
     const fetchMoodLogs = async () => {
       try {
-        const res = await axios.get('/api/moods', {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
+        const API_URL = process.env.REACT_APP_API_URL;
+
+        const res = await axios.get(`${API_URL}/api/moods`, {
+           headers: { Authorization: `Bearer ${token}` },
         });
 
-        // ✅ ABSOLUTE SAFE EXTRACTION
+
         const raw = res?.data;
         const moodArray =
           Array.isArray(raw?.data) ? raw.data :
