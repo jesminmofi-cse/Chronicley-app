@@ -1,20 +1,35 @@
 const Book = require('../models/Book');
 
+// ➕ ADD BOOK
 exports.addBook = async (req, res) => {
   try {
-    const newBook = new Book({ ...req.body, userId: req.userId });
-    const saved = await newBook.save();
-    res.status(201).json(saved);
+    const newBook = await Book.create({
+      ...req.body,
+      userId: req.user.id, // ✅ FIX
+    });
+
+    res.status(201).json(newBook);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to add book', error: err.message });
+    console.error('Add book error:', err);
+    res.status(500).json({
+      message: 'Failed to add book',
+      error: err.message,
+    });
   }
 };
 
+// 📚 GET USER BOOKS
 exports.getBooks = async (req, res) => {
   try {
-    const books = await Book.find({ userId: req.userId }).sort({ createdAt: -1 });
-    res.json(books);
+    const books = await Book.find({ userId: req.user.id }) // ✅ FIX
+      .sort({ createdAt: -1 });
+
+    res.status(200).json(books);
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch books' });
+    console.error('Get books error:', err);
+    res.status(500).json({
+      message: 'Failed to fetch books',
+      error: err.message,
+    });
   }
 };
