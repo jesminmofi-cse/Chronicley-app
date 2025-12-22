@@ -1,6 +1,6 @@
 // src/Planner/BookTrackerPage.jsx
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import api from '../api'; // ✅ USE AXIOS INSTANCE
 import './Book.css';
 
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dxd5rhq4t/image/upload';
@@ -20,24 +20,12 @@ const BookTrackerPage = () => {
   const [summary, setSummary] = useState('');
   const [imageFile, setImageFile] = useState(null);
 
-  const token = localStorage.getItem('token');
-
   const fetchBooks = async () => {
     try {
-      const res = await axios.get('/api/books', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      // 🛡️ ABSOLUTE SAFE NORMALIZATION
-      const raw = res?.data;
-      const safeBooks =
-        Array.isArray(raw?.data) ? raw.data :
-        Array.isArray(raw) ? raw :
-        [];
-
-      setBooks(safeBooks);
+      const res = await api.get('/api/books');
+      setBooks(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error('Fetch books failed:', err);
+      console.error('Fetch books failed:', err.response || err);
       setBooks([]);
     }
   };
@@ -52,12 +40,13 @@ const BookTrackerPage = () => {
     formData.append('file', imageFile);
     formData.append('upload_preset', UPLOAD_PRESET);
 
-    try {
-      const res = await axios.post(CLOUDINARY_URL, formData);
-      return res.data.secure_url || '';
-    } catch {
-      return '';
-    }
+    const res = await fetch(CLOUDINARY_URL, {
+      method: 'POST',
+      body: formData,
+    });
+
+    const data = await res.json();
+    return data.secure_url || '';
   };
 
   const handleAddBook = async (e) => {
@@ -67,23 +56,19 @@ const BookTrackerPage = () => {
     try {
       const imageUrl = await uploadImage();
 
-      await axios.post(
-        '/api/books',
-        {
-          title,
-          startedDate,
-          finishedDate,
-          rating: rating ? Number(rating) : undefined,
-          status,
-          review,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
-          summary,
-          imageUrl,
-        },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
+      await api.post('/api/books', {
+        title,
+        startedDate,
+        finishedDate,
+        rating: rating ? Number(rating) : undefined,
+        status,
+        review,
+        tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+        summary,
+        imageUrl,
+      });
 
-      // reset form
+      // reset
       setTitle('');
       setStartedDate('');
       setFinishedDate('');
@@ -95,6 +80,8 @@ const BookTrackerPage = () => {
       setImageFile(null);
 
       fetchBooks();
+    } catch (err) {
+      console.error('Add book failed:', err.response || err);
     } finally {
       setLoading(false);
     }
@@ -116,7 +103,7 @@ const BookTrackerPage = () => {
           <option value="completed">Completed</option>
         </select>
         <textarea value={review} onChange={e => setReview(e.target.value)} placeholder="Notes" />
-        <input value={tags} onChange={e => setTags(e.target.value)} placeholder="Tags" />
+        <input value={tags} onChange={e => setTags(e.target.value)} placeholder="Tags (comma separated)" />
         <textarea value={summary} onChange={e => setSummary(e.target.value)} placeholder="Summary" />
         <input type="file" onChange={e => setImageFile(e.target.files[0])} />
         <button type="submit" disabled={loading}>
@@ -133,12 +120,8 @@ const BookTrackerPage = () => {
               {book.imageUrl && <img src={book.imageUrl} alt={book.title} />}
               <h3>{book.title}</h3>
               {book.status && <p>Status: {book.status}</p>}
-              {Number.isInteger(book.rating) && (
-                <p>Rating: {'⭐'.repeat(book.rating)}</p>
-              )}
-              {Array.isArray(book.tags) && book.tags.length > 0 && (
-                <p>Tags: {book.tags.join(', ')}</p>
-              )}
+              {Number.isInteger(book.rating) && <p>Rating: {'⭐'.repeat(book.rating)}</p>}
+              {book.tags?.length > 0 && <p>Tags: {book.tags.join(', ')}</p>}
               {book.startedDate && <p>Started: {new Date(book.startedDate).toLocaleDateString()}</p>}
               {book.finishedDate && <p>Finished: {new Date(book.finishedDate).toLocaleDateString()}</p>}
               {book.review && <p>{book.review}</p>}
