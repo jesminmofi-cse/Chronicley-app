@@ -61,7 +61,7 @@ app.use('/api/sleep', require('./routes/sleepRoutes'));
 app.use('/api/yoga', require('./routes/yogaRoutes'));
 app.use('/api/gratitude', require('./routes/gratitudeRoutes'));
 app.use('/api/period', require('./routes/periodRoutes'));
-app.use('/api/wishlist', require('./routes/WishRoutes'));
+//app.use('/api/wishlist', require('./routes/WishRoutes'));
 app.use('/api/meditations', require('./routes/meditationRoutes'));
 app.use('/api/breathing', require('./routes/breathingRoutes'));
 app.use('/api/books', require('./routes/bookRoutes'));
