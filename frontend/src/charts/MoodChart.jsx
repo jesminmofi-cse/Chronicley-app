@@ -28,17 +28,19 @@ const MoodChart = () => {
   useEffect(() => {
     const fetchMoodLogs = async () => {
       try {
-        const API_URL = process.env.REACT_APP_API_URL;
+        // ✅ SAFE BASE URL (fallback to relative)
+        const API_URL = process.env.REACT_APP_API_URL || '';
 
         const res = await axios.get(`${API_URL}/api/moods`, {
-           headers: { Authorization: `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-
+        // 🛡️ BULLETPROOF NORMALIZATION
         const raw = res?.data;
         const moodArray =
-          Array.isArray(raw?.data) ? raw.data :
           Array.isArray(raw) ? raw :
+          Array.isArray(raw?.data) ? raw.data :
+          Array.isArray(raw?.moods) ? raw.moods :
           [];
 
         setMoodLogs(moodArray);
@@ -50,7 +52,8 @@ const MoodChart = () => {
       }
     };
 
-    fetchMoodLogs();
+    if (token) fetchMoodLogs();
+    else setLoading(false);
   }, [token]);
 
   const pastelColors = {
@@ -72,14 +75,11 @@ const MoodChart = () => {
       anxious: 0,
     };
 
-    if (Array.isArray(moodLogs)) {
-      for (let i = 0; i < moodLogs.length; i++) {
-        const mood = moodLogs[i]?.mood;
-        if (moodCount[mood] !== undefined) {
-          moodCount[mood]++;
-        }
+    moodLogs.forEach((log) => {
+      if (log?.mood && moodCount[log.mood] !== undefined) {
+        moodCount[log.mood]++;
       }
-    }
+    });
 
     const labels = Object.keys(moodCount);
 
@@ -89,7 +89,7 @@ const MoodChart = () => {
         {
           label: 'Mood Frequency',
           data: Object.values(moodCount),
-          backgroundColor: labels.map(m => pastelColors[m]),
+          backgroundColor: labels.map((m) => pastelColors[m]),
           borderRadius: 10,
         },
       ],
