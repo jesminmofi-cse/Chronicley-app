@@ -2,6 +2,8 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+const connectDB = require('./config/db');
+
 const app = express();
 
 /* =========================
@@ -51,9 +53,22 @@ app.use('/api/books', require('./routes/bookRoutes'));
 app.use('/api/photos', require('./routes/photoRoutes'));
 
 /* =========================
-   START SERVER
+   START SERVER (FIXED)
    ========================= */
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+
+const startServer = async () => {
+  try {
+    await connectDB();               // 🔑 WAIT for Mongo
+    console.log('MongoDB connected');
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err.message);
+    process.exit(1);
+  }
+};
+
+startServer();
