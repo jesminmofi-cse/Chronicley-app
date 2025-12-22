@@ -3,14 +3,13 @@ const Book = require('../models/Book');
 // ➕ ADD BOOK
 exports.addBook = async (req, res) => {
   try {
-    // 🛡️ SAFETY CHECK
-    if (!req.user || !req.user._id) {
+    if (!req.userId) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
     const newBook = await Book.create({
       ...req.body,
-      userId: req.user._id, // ✅ SAFE
+      userId: req.userId, // ✅ FIXED
     });
 
     res.status(201).json(newBook);
@@ -26,12 +25,11 @@ exports.addBook = async (req, res) => {
 // 📚 GET USER BOOKS
 exports.getBooks = async (req, res) => {
   try {
-    // 🛡️ SAFETY CHECK
-    if (!req.user || !req.user._id) {
+    if (!req.userId) {
       return res.status(401).json({ message: 'User not authenticated' });
     }
 
-    const books = await Book.find({ userId: req.user._id })
+    const books = await Book.find({ userId: req.userId })
       .sort({ createdAt: -1 });
 
     res.status(200).json(books);
