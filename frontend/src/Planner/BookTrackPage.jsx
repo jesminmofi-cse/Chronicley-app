@@ -1,14 +1,15 @@
-// src/Planner/BookTrackerPage.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './Book.css';
 
 const CLOUDINARY_URL = 'https://api.cloudinary.com/v1_1/dxd5rhq4t/image/upload';
 const UPLOAD_PRESET = 'chroniclely';
+const API_URL = process.env.REACT_APP_API_URL;
 
-const BookTrackerPage = () => {
+const BookTracker = () => {
   const [books, setBooks] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const [title, setTitle] = useState('');
   const [startedDate, setStartedDate] = useState('');
@@ -16,59 +17,73 @@ const BookTrackerPage = () => {
   const [rating, setRating] = useState('');
   const [status, setStatus] = useState('');
   const [review, setReview] = useState('');
-  const [tags, setTags] = useState('');
   const [summary, setSummary] = useState('');
+  const [tags, setTags] = useState('');
   const [imageFile, setImageFile] = useState(null);
 
   const token = localStorage.getItem('token');
 
+  /* ======================
+     FETCH BOOKS (SAFE)
+     ====================== */
   const fetchBooks = async () => {
     try {
-      const res = await axios.get('/api/books', {
+      const res = await axios.get(`${API_URL}/api/books`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      // 🛡️ ABSOLUTE SAFE NORMALIZATION
       const raw = res?.data;
-      const safeBooks =
+      const bookArray =
         Array.isArray(raw?.data) ? raw.data :
         Array.isArray(raw) ? raw :
         [];
 
-      setBooks(safeBooks);
+      setBooks(bookArray);
+      setError('');
     } catch (err) {
-      console.error('Fetch books failed:', err);
+      console.error('Failed to fetch books:', err);
       setBooks([]);
+      setError('Failed to load books');
     }
   };
 
   useEffect(() => {
     fetchBooks();
+    // eslint-disable-next-line
   }, []);
 
+  /* ======================
+     IMAGE UPLOAD
+     ====================== */
   const uploadImage = async () => {
     if (!imageFile) return '';
+
     const formData = new FormData();
     formData.append('file', imageFile);
     formData.append('upload_preset', UPLOAD_PRESET);
 
     try {
-      const res = await axios.post(CLOUDINARY_URL, formData);
-      return res.data.secure_url || '';
-    } catch {
+      const response = await axios.post(CLOUDINARY_URL, formData);
+      return response.data.secure_url;
+    } catch (err) {
+      console.error('Image upload failed:', err);
       return '';
     }
   };
 
+  /* ======================
+     ADD BOOK
+     ====================== */
   const handleAddBook = async (e) => {
     e.preventDefault();
+    setError('');
     setLoading(true);
 
     try {
-      const imageUrl = await uploadImage();
+      const uploadedImageUrl = await uploadImage();
 
       await axios.post(
-        '/api/books',
+        `${API_URL}/api/books`,
         {
           title,
           startedDate,
@@ -76,73 +91,155 @@ const BookTrackerPage = () => {
           rating: rating ? Number(rating) : undefined,
           status,
           review,
-          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
           summary,
-          imageUrl,
+          tags: tags.split(',').map(t => t.trim()).filter(Boolean),
+          imageUrl: uploadedImageUrl,
         },
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
-      // reset form
+      // reset
       setTitle('');
       setStartedDate('');
       setFinishedDate('');
       setRating('');
       setStatus('');
       setReview('');
-      setTags('');
       setSummary('');
+      setTags('');
       setImageFile(null);
 
       fetchBooks();
+    } catch (err) {
+      console.error('Error adding book:', err);
+      setError('Failed to add book');
     } finally {
       setLoading(false);
     }
   };
 
+  /* ======================
+     DELETE BOOK
+     ====================== */
+  const deleteBook = async (id) => {
+    try {
+      await axios.delete(
+        `${API_URL}/api/books/${id}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      fetchBooks();
+    } catch (err) {
+      console.error('Error deleting book:', err);
+    }
+  };
+
+  /* ======================
+     RENDER
+     ====================== */
   return (
     <div className="booktracker-container">
-      <h2>Book Tracker</h2>
+      <h2>My Reading Log 📚</h2>
 
       <form className="booktracker-form" onSubmit={handleAddBook}>
-        <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Book Title" required />
-        <input type="date" value={startedDate} onChange={e => setStartedDate(e.target.value)} />
-        <input type="date" value={finishedDate} onChange={e => setFinishedDate(e.target.value)} />
-        <input type="number" min="1" max="5" value={rating} onChange={e => setRating(e.target.value)} />
-        <select value={status} onChange={e => setStatus(e.target.value)} required>
+        <input
+          type="text"
+          placeholder="Book title"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          required
+        />
+
+        <input
+          type="date"
+          value={startedDate}
+          onChange={(e) => setStartedDate(e.target.value)}
+        />
+
+        <input
+          type="date"
+          value={finishedDate}
+          onChange={(e) => setFinishedDate(e.target.value)}
+        />
+
+        <select value={status} onChange={(e) => setStatus(e.target.value)} required>
           <option value="">-- Status --</option>
           <option value="to read">To Read</option>
           <option value="reading">Reading</option>
           <option value="completed">Completed</option>
         </select>
-        <textarea value={review} onChange={e => setReview(e.target.value)} placeholder="Notes" />
-        <input value={tags} onChange={e => setTags(e.target.value)} placeholder="Tags" />
-        <textarea value={summary} onChange={e => setSummary(e.target.value)} placeholder="Summary" />
-        <input type="file" onChange={e => setImageFile(e.target.files[0])} />
+
+        <input
+          type="number"
+          min="1"
+          max="5"
+          placeholder="Rating (1–5)"
+          value={rating}
+          onChange={(e) => setRating(e.target.value)}
+        />
+
+        <textarea
+          placeholder="Notes / Review"
+          value={review}
+          onChange={(e) => setReview(e.target.value)}
+        />
+
+        <textarea
+          placeholder="Summary"
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+        />
+
+        <input
+          type="text"
+          placeholder="Tags (comma separated)"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+        />
+
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setImageFile(e.target.files[0])}
+        />
+
         <button type="submit" disabled={loading}>
-          {loading ? 'Adding…' : 'Add Book'}
+          {loading ? 'Adding...' : 'Add Book'}
         </button>
       </form>
 
+      {error && <p className="error">{error}</p>}
+
       <div className="booktracker-items">
         {books.length === 0 ? (
-          <p>No books yet 📚</p>
+          <p className="empty-msg">No books yet. Let’s read something 📖</p>
         ) : (
           books.map((book) => (
             <div key={book._id} className="book-item">
-              {book.imageUrl && <img src={book.imageUrl} alt={book.title} />}
-              <h3>{book.title}</h3>
-              {book.status && <p>Status: {book.status}</p>}
-              {Number.isInteger(book.rating) && (
-                <p>Rating: {'⭐'.repeat(book.rating)}</p>
+              <div className="book-info">
+                <h3>{book.title}</h3>
+                {book.status && <small>Status: {book.status}</small>}
+                {book.rating && <p>⭐ {book.rating}/5</p>}
+                {book.startedDate && (
+                  <p>Started: {new Date(book.startedDate).toLocaleDateString()}</p>
+                )}
+                {book.finishedDate && (
+                  <p>Finished: {new Date(book.finishedDate).toLocaleDateString()}</p>
+                )}
+                {book.tags?.length > 0 && <p>Tags: {book.tags.join(', ')}</p>}
+                {book.review && <p>{book.review}</p>}
+                {book.summary && <p>{book.summary}</p>}
+              </div>
+
+              {book.imageUrl && (
+                <img src={book.imageUrl} alt={book.title} className="book-image" />
               )}
-              {Array.isArray(book.tags) && book.tags.length > 0 && (
-                <p>Tags: {book.tags.join(', ')}</p>
-              )}
-              {book.startedDate && <p>Started: {new Date(book.startedDate).toLocaleDateString()}</p>}
-              {book.finishedDate && <p>Finished: {new Date(book.finishedDate).toLocaleDateString()}</p>}
-              {book.review && <p>{book.review}</p>}
-              {book.summary && <p>{book.summary}</p>}
+
+              <button
+                className="delete-btn"
+                onClick={() => deleteBook(book._id)}
+              >
+                🗑️
+              </button>
             </div>
           ))
         )}
@@ -151,4 +248,4 @@ const BookTrackerPage = () => {
   );
 };
 
-export default BookTrackerPage;
+export default BookTracker;
