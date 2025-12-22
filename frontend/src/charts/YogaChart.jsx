@@ -19,6 +19,8 @@ ChartJS.register(
   Legend
 );
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const YogaChart = () => {
   const [yogaLogs, setYogaLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,13 +29,16 @@ const YogaChart = () => {
     const fetchYogaData = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          setYogaLogs([]);
+          return;
+        }
 
-        const res = await axios.get('/api/yoga', {
+        const res = await axios.get(`${API_URL}/api/yoga`, {
           headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
         });
 
-        // 🛡️ ABSOLUTE SAFE EXTRACTION
+        // 🛡️ BULLETPROOF ARRAY EXTRACTION
         const raw = res?.data;
         const yogaArray =
           Array.isArray(raw?.data) ? raw.data :
@@ -42,7 +47,7 @@ const YogaChart = () => {
 
         setYogaLogs(yogaArray);
       } catch (err) {
-        console.error('Error fetching yoga data:', err);
+        console.error('YogaChart fetch error:', err);
         setYogaLogs([]);
       } finally {
         setLoading(false);
@@ -63,20 +68,17 @@ const YogaChart = () => {
     Saturday: 0,
   };
 
-  if (Array.isArray(yogaLogs)) {
-    for (let i = 0; i < yogaLogs.length; i++) {
-      const log = yogaLogs[i];
-      if (!log?.date || typeof log.duration !== 'number') continue;
+  yogaLogs.forEach((log) => {
+    if (!log?.date || typeof log?.duration !== 'number') return;
 
-      const day = new Date(log.date).toLocaleDateString('en-US', {
-        weekday: 'long',
-      });
+    const d = new Date(log.date);
+    if (isNaN(d.getTime())) return;
 
-      if (dayMap[day] !== undefined) {
-        dayMap[day] += log.duration;
-      }
+    const day = d.toLocaleDateString('en-US', { weekday: 'long' });
+    if (dayMap[day] !== undefined) {
+      dayMap[day] += log.duration;
     }
-  }
+  });
 
   const chartData = {
     labels: Object.keys(dayMap),
@@ -136,3 +138,4 @@ const YogaChart = () => {
 };
 
 export default YogaChart;
+
