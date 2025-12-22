@@ -1,35 +1,24 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 require('dotenv').config();
 
 const app = express();
 
 /* =========================
-   CORS CONFIG (FIXED)
+   CORS CONFIG (SAFE)
    ========================= */
 const allowedOrigins = [
   'https://chronicley-app.vercel.app'
 ];
 
-const corsOptions = {
-  origin: function (origin, callback) {
-    // Allow server-to-server, Postman, curl
+app.use(cors({
+  origin(origin, callback) {
     if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('Not allowed by CORS'));
-    }
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    callback(new Error('Not allowed by CORS'));
   },
   credentials: true,
-};
-
-app.use(cors(corsOptions));
-
-// 🔥 CRITICAL: allow preflight OPTIONS requests
-app.options('*', cors(corsOptions));
+}));
 
 /* =========================
    MIDDLEWARE
@@ -37,17 +26,11 @@ app.options('*', cors(corsOptions));
 app.use(express.json());
 
 /* =========================
-   ROOT ROUTE
+   ROOT
    ========================= */
 app.get('/', (req, res) => {
-  res.send('Welcome to Chroniclely API 🌿');
+  res.send('Chroniclely API 🌿');
 });
-
-/* =========================
-   DATABASE
-   ========================= */
-const connectDB = require('./config/db');
-connectDB();
 
 /* =========================
    ROUTES
@@ -61,14 +44,14 @@ app.use('/api/sleep', require('./routes/sleepRoutes'));
 app.use('/api/yoga', require('./routes/yogaRoutes'));
 app.use('/api/gratitude', require('./routes/gratitudeRoutes'));
 app.use('/api/period', require('./routes/periodRoutes'));
-//app.use('/api/wishlist', require('./routes/WishRoutes'));
+app.use('/api/wishlist', require('./routes/WishRoutes'));
 app.use('/api/meditations', require('./routes/meditationRoutes'));
 app.use('/api/breathing', require('./routes/breathingRoutes'));
 app.use('/api/books', require('./routes/bookRoutes'));
 app.use('/api/photos', require('./routes/photoRoutes'));
 
 /* =========================
-   SERVER START
+   START SERVER
    ========================= */
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
