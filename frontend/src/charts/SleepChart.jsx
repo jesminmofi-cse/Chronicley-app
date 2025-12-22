@@ -1,4 +1,4 @@
-// src/Planner/SleepChart.jsx
+// src/charts/SleepChart.jsx
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Radar } from 'react-chartjs-2';
@@ -21,6 +21,8 @@ ChartJS.register(
   Legend
 );
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const SleepChart = () => {
   const [sleepEntries, setSleepEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,22 +31,28 @@ const SleepChart = () => {
     const fetchSleepData = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          setSleepEntries([]);
+          return;
+        }
 
-        const res = await axios.get('/api/sleep', {
-          headers: { Authorization: `Bearer ${token}` },
-          withCredentials: true,
+        const res = await axios.get(`${API_URL}/api/sleep`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         });
 
-        // 🛡️ SAFE ARRAY EXTRACTION (THIS IS THE FIX)
-        const sleepArray = Array.isArray(res.data?.data)
-          ? res.data.data
-          : Array.isArray(res.data)
-          ? res.data
-          : [];
+        // 🛡️ BULLETPROOF ARRAY EXTRACTION
+        const raw = res?.data;
+        const sleepArray =
+          Array.isArray(raw?.data) ? raw.data :
+          Array.isArray(raw) ? raw :
+          [];
 
+        // keep only last 7 entries (latest first)
         setSleepEntries(sleepArray.slice(-7).reverse());
       } catch (err) {
-        console.error('Error fetching sleep data:', err);
+        console.error('SleepChart fetch error:', err);
         setSleepEntries([]);
       } finally {
         setLoading(false);
@@ -55,32 +63,40 @@ const SleepChart = () => {
   }, []);
 
   const chartData = {
-    labels: sleepEntries.map((entry) =>
-      entry.sleepStart
-        ? new Date(entry.sleepStart).toLocaleDateString()
-        : 'Unknown'
-    ),
+    labels: sleepEntries.map((entry) => {
+      if (!entry?.sleepStart) return 'Unknown';
+      const d = new Date(entry.sleepStart);
+      return isNaN(d.getTime())
+        ? 'Invalid'
+        : d.toLocaleDateString();
+    }),
     datasets: [
       {
         label: 'Sleep Duration (hrs)',
         data: sleepEntries.map((entry) =>
-          typeof entry.duration === 'number' ? entry.duration : 0
+          typeof entry?.duration === 'number' ? entry.duration : 0
         ),
-        backgroundColor: 'rgba(128, 128, 128, 0.4)',
+        backgroundColor: 'rgba(150, 150, 150, 0.35)',
         borderColor: '#888',
-        pointBackgroundColor: '#ccc',
+        pointBackgroundColor: '#aaa',
         borderWidth: 2,
       },
     ],
   };
 
   const options = {
+    responsive: true,
     scales: {
       r: {
         angleLines: { display: true },
         suggestedMin: 0,
         suggestedMax: 12,
         ticks: { stepSize: 1 },
+      },
+    },
+    plugins: {
+      legend: {
+        display: false,
       },
     },
   };
