@@ -21,6 +21,8 @@ ChartJS.register(
   Legend
 );
 
+const API_URL = process.env.REACT_APP_API_URL;
+
 const WaterChart = () => {
   const [entries, setEntries] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,24 +31,28 @@ const WaterChart = () => {
     const fetchEntries = async () => {
       try {
         const token = localStorage.getItem('token');
+        if (!token) {
+          setEntries([]);
+          return;
+        }
 
-        const res = await axios.get('/api/water', {
+        const res = await axios.get(`${API_URL}/api/water`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-          withCredentials: true,
         });
 
-        // 🛡️ SAFE ARRAY EXTRACTION (CRITICAL FIX)
-        const waterArray = Array.isArray(res.data?.data)
-          ? res.data.data
-          : Array.isArray(res.data)
-          ? res.data
-          : [];
+        // 🛡️ BULLETPROOF ARRAY EXTRACTION
+        const raw = res?.data;
+        const waterArray =
+          Array.isArray(raw?.data) ? raw.data :
+          Array.isArray(raw) ? raw :
+          [];
 
+        // show last 7 entries, latest first
         setEntries(waterArray.slice(-7).reverse());
       } catch (err) {
-        console.error('Error fetching water data:', err);
+        console.error('WaterChart fetch error:', err);
         setEntries([]);
       } finally {
         setLoading(false);
@@ -57,21 +63,26 @@ const WaterChart = () => {
   }, []);
 
   const chartData = {
-    labels: entries.map((entry) =>
-      entry.date || entry.createdAt
-        ? new Date(entry.date || entry.createdAt).toLocaleDateString()
-        : 'Unknown'
-    ),
+    labels: entries.map((entry) => {
+      const rawDate = entry?.date || entry?.createdAt;
+      if (!rawDate) return 'Unknown';
+
+      const d = new Date(rawDate);
+      return isNaN(d.getTime())
+        ? 'Invalid'
+        : d.toLocaleDateString();
+    }),
     datasets: [
       {
         label: 'Water Intake (ml)',
         data: entries.map((entry) =>
-          typeof entry.amount === 'number' ? entry.amount : 0
+          typeof entry?.amount === 'number' ? entry.amount : 0
         ),
         borderColor: '#1E90FF',
-        backgroundColor: 'rgba(135, 206, 250, 0.4)',
+        backgroundColor: 'rgba(135, 206, 250, 0.35)',
         fill: true,
         tension: 0.4,
+        pointRadius: 4,
         pointBackgroundColor: '#00BFFF',
       },
     ],
@@ -80,7 +91,7 @@ const WaterChart = () => {
   const options = {
     responsive: true,
     plugins: {
-      legend: { display: true },
+      legend: { display: false },
       tooltip: {
         callbacks: {
           label: (ctx) => `${ctx.raw} ml`,
