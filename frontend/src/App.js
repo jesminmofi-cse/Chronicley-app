@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import LoginPage from './Auth/LoginPage';
 import RegisterPage from './Auth/RegisterPage';
 import ProtectedRoute from './Auth/ProtectedRoute';
+import AffirmationPage from './Planner/AffirmationPage';
 import HomePage from './Planner/HomePage';
 import YogaPage from './Planner/YogaPage';
 import SleepPage from './Planner/SleepPage';
@@ -31,6 +32,9 @@ function App() {
         } />
         <Route path="/calendar" element={
           <ProtectedRoute><CalendarView /></ProtectedRoute>
+        } />
+          <Route path="/affirmations" element={
+          <ProtectedRoute><AffirmationPage /></ProtectedRoute>
         } />
         <Route path="/yoga" element={
           <ProtectedRoute><YogaPage /></ProtectedRoute>
