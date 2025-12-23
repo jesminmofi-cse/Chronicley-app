@@ -22,6 +22,7 @@ const Sidebar = () => {
       <ul>
         <li><Link to="/home" className={isActive('/home')}>Home</Link></li>
         <li><Link to="/calendar" className={isActive('/calendar')}>Calendar</Link></li>
+        <li><Link to="/affirmations" className={isActive('/affirmations')}>Affirmations</Link></li>
         <li><Link to="/yoga" className={isActive('/yoga')}>Yoga Tracker</Link></li>
         <li><Link to="/sleep" className={isActive('/sleep')}>Sleep Tracker</Link></li>
         <li><Link to="/mood" className={isActive('/mood')}>Mood Tracker</Link></li>
