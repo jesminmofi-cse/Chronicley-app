@@ -35,6 +35,7 @@ Log daily mood (happy, sad, angry, neutral, excited, anxious)
 Date-based entries
 Bar chart visualization of mood frequency
 Helps identify emotional patterns over time
+
 <img width="997" height="825" alt="image" src="https://github.com/user-attachments/assets/334087ea-e7b0-4c2a-b1ec-9db148abf9bb" />
 
 # Sleep Tracker
@@ -42,18 +43,21 @@ Track sleep start & end times
 Automatic sleep duration calculation
 Visual chart representation
 Supports awareness of rest cycles and habits
+
 <img width="945" height="968" alt="image" src="https://github.com/user-attachments/assets/dacc4184-a00c-490d-bdd5-77008e247bbe" />
 
 # Yoga Tracker
 Log yoga sessions
 Track consistency over time
 Visual progress insights
+
 <img width="1324" height="857" alt="image" src="https://github.com/user-attachments/assets/7033b6eb-dfef-4840-a585-f03430a0ceea" />
 
 # Water Tracker
 Daily water intake tracking
 Encourages hydration habits
 Simple and distraction-free
+
 <img width="946" height="723" alt="image" src="https://github.com/user-attachments/assets/3de44e94-6f61-426c-a215-8c9832dfe6a5" />
 
 # Task Tracker
@@ -74,18 +78,21 @@ Private, secure, and reflective space
 Upload images with captions
 Visual memory keeping
 Perfect for moments words can’t hold
+
 <img width="991" height="914" alt="image" src="https://github.com/user-attachments/assets/cb1d1a8e-45cc-42d1-9c7f-ffd7fdccc179" />
 
 # Gratitude Journal
 Daily gratitude entries
 Encourages positive reflection
 Helps build emotional resilience
+
 <img width="719" height="792" alt="image" src="https://github.com/user-attachments/assets/2623c9dc-9bad-413c-bed8-f3c1ef01507f" />
 
 
 # Book Tracker
 Track books being read
 Supports mindful reading habits
+
 <img width="1033" height="714" alt="image" src="https://github.com/user-attachments/assets/d7918feb-9489-4ff3-b780-1cd06359fcea" />
 
 
@@ -93,12 +100,15 @@ Supports mindful reading habits
 Track menstrual cycle data
 Personal and private
 Helps with health awareness
+
 <img width="460" height="313" alt="image" src="https://github.com/user-attachments/assets/e0f97909-1eb5-4f2a-9b01-adcbf09a972e" />
 
 
 # Wish List
 Save goals, desires, and dreams
 Acts as a vision board in text form
+
+
 <img width="887" height="570" alt="image" src="https://github.com/user-attachments/assets/114a7cb3-4c49-4571-b4f3-f9d4224b8ca3" />
 
 # Meditation
