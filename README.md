@@ -195,22 +195,4 @@ Healing doesn’t need perfection.
 
 This app is for people who want to listen to themselves — gently.
 
-# Author
-JUNE
-Computer Engineering Student
-Builder of calm systems & poetic code 🌿
 
-If you want next:
-
-
-a short README for resume submission
-
-
-a portfolio description
-
-
-or a product story / pitch
-
-
-say the word.
-Chroniclely isn’t finished — it’s alive 🌙
