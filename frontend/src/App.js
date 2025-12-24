@@ -6,6 +6,7 @@ import ProtectedRoute from './Auth/ProtectedRoute';
 import AffirmationPage from './Planner/AffirmationPage';
 import HomePage from './Planner/HomePage';
 import YogaPage from './Planner/YogaPage';
+import FocusSession from './Planner/FocusSession';
 import SleepPage from './Planner/SleepPage';
 import WaterPage from './Planner/WaterPage';
 import TaskPage from './Planner/TaskPage';
@@ -38,6 +39,9 @@ function App() {
         } />
         <Route path="/yoga" element={
           <ProtectedRoute><YogaPage /></ProtectedRoute>
+        } />
+        <Route path="/focus" element={
+          <ProtectedRoute><FocusSession /></ProtectedRoute>
         } />
         <Route path="/sleep" element={
           <ProtectedRoute><SleepPage /></ProtectedRoute>
